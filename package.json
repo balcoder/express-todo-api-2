@@ -1,0 +1,20 @@
+{
+  "name": "express-todo-api-2",
+  "version": "1.0.0",
+  "description": "Todo api using express mongo and node",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Api",
+    "mongo",
+    "express",
+    "node"
+  ],
+  "author": "Des Barrett",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
