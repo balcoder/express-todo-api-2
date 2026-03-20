@@ -1,5 +1,14 @@
 const db = require("../models");
+// get one todo
+exports.getTodo = (req, res) => {
+  db.Todo.findById(req.params.todoId)
+    .then((foundTodo) => {
+      res.json(foundTodo);
+    })
+    .catch((err) => res.status(500).json({ error: err.message }));
+};
 
+// get all todos
 exports.getTodos = (req, res) => {
   db.Todo.find()
     .then((todos) => {
@@ -11,14 +20,6 @@ exports.getTodos = (req, res) => {
 exports.createTodo = (req, res) => {
   db.Todo.create(req.body)
     .then((newTodo) => res.status(201).json(newTodo))
-    .catch((err) => res.status(500).json({ error: err.message }));
-};
-
-exports.getTodo = (req, res) => {
-  db.Todo.findById(req.params.todoId)
-    .then((foundTodo) => {
-      res.json(foundTodo);
-    })
     .catch((err) => res.status(500).json({ error: err.message }));
 };
 

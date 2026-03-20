@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const app = express();
 const port = process.env.PORT || 3000;
+const path = require("path");
 
 const todoRoutes = require("./routes/todos");
 
@@ -9,8 +10,11 @@ const todoRoutes = require("./routes/todos");
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 
+app.use(express.static(path.join(__dirname, "views")));
+app.use(express.static(path.join(__dirname, "public")));
+
 app.get("/", (req, res) => {
-  res.json({ message: "Hi from index.js object" });
+  res.sendFile(path.join(__dirname, "views/index.html"));
 });
 
 app.use("/api/todos", todoRoutes);
