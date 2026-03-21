@@ -5,7 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "nodemon index.js"
+    "start": "node index.js",
+    "devstart": "nodemon index.js",    
+    "scss": "sass --style=compressed SCSS:public",
+    "build:css": "sass --style=compressed SCSS/styles.scss public/app.min.css",
+    "watch:css": "sass --watch SCSS/styles.scss:public/app.css",
+    "watch:all": "npm-run-all -p devstart watch:css"
   },
   "keywords": [
     "Api",
@@ -21,6 +26,9 @@
     "mongoose": "^9.3.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "browser-sync": "^3.0.4",
+    "nodemon": "^3.1.14",
+    "npm-run-all": "^4.1.5",
+    "sass": "^1.98.0"
   }
 }

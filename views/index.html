@@ -7,7 +7,19 @@
     <link rel="stylesheet" href="app.css" />
   </head>
   <body>
-    <h1>html file from views</h1>
-    <script src="app.js"></script>
+    <header>
+      <h1>todo<span>list</span></h1>
+      <h2>A simple todo app built with node and express</h2>
+    </header>
+    <section class="form">
+      <input
+        type="text"
+        id="todoInput"
+        placeholder="Insert your task here..."
+      />
+    </section>
+    <ul class="list"></ul>
+
+    <script src="app.js" defer></script>
   </body>
 </html>
