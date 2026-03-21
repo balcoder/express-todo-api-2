@@ -2,135 +2,116 @@ const listUl = document.querySelector(".list");
 const input = document.querySelector("#todoInput");
 const url = "/api/todos/";
 
-input.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    createTodo(input.value);
+/**
+ * Event Listeners
+ */
+
+// Handle keyboard input
+input.addEventListener("keydown", ({ key, target }) => {
+  // grab the key and target fromt the event obj
+  if (key === "Enter" && target.value.trim()) {
+    createTodo(target.value.trim());
+    target.value = ""; // Clear input immediately for better UX
   }
 });
 
-// listen for click on parent UL then target the span or li
-listUl.addEventListener("click", (e) => {
+// listen for clicks on parent UL
+listUl.addEventListener("click", async (e) => {
+  const li = e.target.closest("li");
+  const id = li.dataset.id;
+  // delete todo if clicking the span and update DOM
   if (e.target.tagName === "SPAN") {
-    let li = e.target.closest("li");
-    removeTodo(li.dataset.id);
+    await removeTodo(id);
     li.remove();
-  } else if (e.target.tagName === "LI") {
-    let li = e.target.closest("li");
-    updateTodo(li.dataset.id);
+  }
+  // toggle status on todo and update db
+  else if (e.target.tagName === "LI") {
+    const isCompleted = li.classList.contains("done");
+    await updateTodo(id, !isCompleted);
     li.classList.toggle("done");
   }
 });
 
-async function getTodos() {
+/**
+ * API
+ */
+
+const getTodos = async () => {
   try {
     const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Response status: ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`Response status: ${response.status}`);
 
     const todos = await response.json();
-    addTodos(todos);
+    todos.forEach(addTodoToDOM);
+    // addTodos(todos);
   } catch (error) {
     console.error(error.message);
   }
-}
+};
 
-async function getTodo(id) {
-  try {
-    const response = await fetch(url + id);
-    if (!response.ok) {
-      throw new Error(`Response status: ${response.status}`);
-    }
-
-    const todo = await response.json();
-    return todo;
-  } catch (error) {
-    console.error(error.message);
-  }
-}
-
-function addTodos(todos) {
-  todos.forEach((todo) => {
-    addTodo(todo);
-  });
-}
-
-function addTodo(todo) {
-  let li = document.createElement("li");
-  let span = document.createElement("span");
-  span.className = "deleteX";
-  span.innerHTML = "X";
-
-  li.innerHTML = todo.name;
-  li.dataset.id = todo._id;
-  li.append(span);
-
-  !todo.completed ? (li.className = "task") : (li.className = "task done");
-  listUl.append(li);
-  input.value = "";
-}
-
-async function createTodo(todoStr) {
+const createTodo = async (name) => {
   try {
     const response = await fetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ name: todoStr }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
     });
+    if (!response.ok) throw new Error("Could not create todo");
 
-    if (!response.ok) {
-      throw new Error(`Response status: ${response.status}`);
-    }
-
-    const todoJson = await response.json();
-    addTodo(todoJson);
-  } catch (error) {
-    console.error(error.message);
+    const newTodo = await response.json();
+    addTodoToDOM(newTodo);
+  } catch (err) {
+    console.error(err.message);
   }
-}
+};
 
-async function removeTodo(todoStr) {
+// Toggle completion status on the database
+const updateTodo = async (id, completed) => {
   try {
-    let deleteUrl = url + todoStr;
-    const response = await fetch(deleteUrl, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    if (!response.ok) {
-      throw new Error(`Response status: ${response.status}`);
-    }
-    // wait for the json response
-    const responseJson = await response.json();
-    console.log(`Todo id:${responseJson._id} was deleted from the database`);
-  } catch (error) {
-    console.error(error.message);
-  }
-}
-
-async function updateTodo(todoStr) {
-  try {
-    let todo = await getTodo(todoStr);
-    let updateUrl = url + todoStr;
-    const response = await fetch(updateUrl, {
+    const response = await fetch(`${url}${id}`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ completed: !todo.completed }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ completed }),
     });
-    if (!response.ok) {
-      throw new Error(`Response status: ${response.status}`);
-    }
-    // wait for the json response
-    const responseJson = await response.json();
-    console.log(`Todo id:${responseJson._id} was updated`);
-  } catch (error) {
-    console.error(error.message);
+    if (!response.ok) throw new Error("Update failed");
+    console.log(`Todo ${id} updated`);
+  } catch (err) {
+    console.error(err.message);
   }
-}
+};
 
+// Delete todo from the server
+
+const removeTodo = async (id) => {
+  try {
+    const response = await fetch(`${url}${id}`, { method: "DELETE" });
+    if (!response.ok) throw new Error("Delete failed");
+    console.log(`Todo ${id} deleted.`);
+  } catch (err) {
+    console.error(err.message);
+  }
+};
+
+/**
+ * UI Helpers
+ */
+
+const addTodoToDOM = ({ _id, name, completed }) => {
+  const li = document.createElement("li");
+  li.classList.add("task");
+  if (completed) li.classList.add("done");
+
+  li.dataset.id = _id;
+  // use textContent instead of html for XSS
+  li.textContent = name;
+
+  const span = document.createElement("span");
+  span.className = "deleteX";
+  span.textContent = "X";
+
+  li.append(span);
+  listUl.append(li);
+};
+
+// initial render
 getTodos();
